@@ -11,6 +11,9 @@ IPAddress subnet(255,255,255,0);
 
 // Sensor configuration
 #define temperatureChangeThreshold 0.5 // accuracy from the data sheet
+#define ONE_WIRE_BUS 2
+#define TEMPERATURE_PRECISION 9
+DeviceAddress tube = { 0x28, 0xAB, 0x86, 0x52, 0x0C, 0x00, 0x00, 0x89 };
 
 // Reporting
 #define polling_m 1 // every X minutes

@@ -7,6 +7,8 @@
  *
  */
 
+#include <OneWire.h>
+#include <DallasTemperature.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
@@ -14,6 +16,9 @@
 
 WiFiClient espClient;
 PubSubClient client(espClient);
+
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
 
 float previousTemperature = 0.0;
 float temperature, temperatureDifference;
@@ -47,45 +52,58 @@ void setup() {
   // configure MQTT server
   client.setServer(mqtt_server, 1883);
 
+  // Start up the Dallas library
+  sensors.begin();
+  sensors.setResolution(tube, TEMPERATURE_PRECISION);
+
 } // end setup
 
 void loop() {
 
   // read latest sensors
+  Serial.print("Requesting temperatures...");
+  sensors.requestTemperatures();
+  Serial.println("DONE");
 
-  Serial.print("Previous temperature (C): ");
-  Serial.println(previousTemperature);
-  Serial.print("Current temperature (C): ");
-  Serial.println(temperature);
+  float tubeC = sensors.getTempC(tube);
+
+  Serial.print("Tube temperature: ");
+  Serial.print(tubeC);
+  Serial.println("C");
+
+  // Serial.print("Previous temperature (C): ");
+  // Serial.println(previousTemperature);
+  // Serial.print("Current temperature (C): ");
+  // Serial.println(temperature);
 
   // calculate difference from last reading
-  temperatureDifference = fabs(previousTemperature - temperature);
+  // temperatureDifference = fabs(previousTemperature - temperature);
 
-  Serial.print("Temperature difference (C): ");
-  Serial.println(temperatureDifference);
+  // Serial.print("Temperature difference (C): ");
+  // Serial.println(temperatureDifference);
 
   // connect to MQTT server
-  if (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    if (client.connect("ESP8266Client")) {
-      Serial.println("connected");
-    } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
-    }
-  }
-
-  // only publish new reading if outside repeatability range
-  if (temperatureDifference >= temperatureChangeThreshold) {
-    Serial.println("Temperature change detected - publishing");
-    client.publish(temperature_topic, String(temperature).c_str(), true);
-    previousTemperature = temperature;
-  } else {
-    Serial.println("No significant temperature change detected - skipping");
-  }
+  // if (!client.connected()) {
+  //   Serial.print("Attempting MQTT connection...");
+  //   if (client.connect("ESP8266Client")) {
+  //     Serial.println("connected");
+  //   } else {
+  //     Serial.print("failed, rc=");
+  //     Serial.print(client.state());
+  //     Serial.println(" try again in 5 seconds");
+  //     // Wait 5 seconds before retrying
+  //     delay(5000);
+  //   }
+  // }
+  //
+  // // only publish new reading if outside repeatability range
+  // if (temperatureDifference >= temperatureChangeThreshold) {
+  //   Serial.println("Temperature change detected - publishing");
+  //   client.publish(temperature_topic, String(temperature).c_str(), true);
+  //   previousTemperature = temperature;
+  // } else {
+  //   Serial.println("No significant temperature change detected - skipping");
+  // }
 
   // drop into next reporting cycle
   Serial.println("Waiting for next reporting cycle...");
