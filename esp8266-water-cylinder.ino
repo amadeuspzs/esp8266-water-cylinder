@@ -20,9 +20,6 @@ PubSubClient client(espClient);
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
-float previousTemperature = 0.0;
-float temperature, temperatureDifference;
-
 void setup() {
 
   // switch on Serial
@@ -71,39 +68,24 @@ void loop() {
   Serial.print(tubeC);
   Serial.println("C");
 
-  // Serial.print("Previous temperature (C): ");
-  // Serial.println(previousTemperature);
-  // Serial.print("Current temperature (C): ");
-  // Serial.println(temperature);
-
-  // calculate difference from last reading
-  // temperatureDifference = fabs(previousTemperature - temperature);
-
-  // Serial.print("Temperature difference (C): ");
-  // Serial.println(temperatureDifference);
-
   // connect to MQTT server
-  // if (!client.connected()) {
-  //   Serial.print("Attempting MQTT connection...");
-  //   if (client.connect("ESP8266Client")) {
-  //     Serial.println("connected");
-  //   } else {
-  //     Serial.print("failed, rc=");
-  //     Serial.print(client.state());
-  //     Serial.println(" try again in 5 seconds");
-  //     // Wait 5 seconds before retrying
-  //     delay(5000);
-  //   }
-  // }
-  //
-  // // only publish new reading if outside repeatability range
-  // if (temperatureDifference >= temperatureChangeThreshold) {
-  //   Serial.println("Temperature change detected - publishing");
-  //   client.publish(temperature_topic, String(temperature).c_str(), true);
-  //   previousTemperature = temperature;
-  // } else {
-  //   Serial.println("No significant temperature change detected - skipping");
-  // }
+  if (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    if (client.connect("ESP8266Client")) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
+  }
+
+  Serial.println("Publishing to MQTT...");
+  
+  // publish new reading
+  client.publish(tube_topic, String(tubeC).c_str(), true);
 
   // drop into next reporting cycle
   Serial.println("Waiting for next reporting cycle...");
