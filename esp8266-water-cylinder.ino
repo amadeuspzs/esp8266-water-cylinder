@@ -51,7 +51,6 @@ void setup() {
 
   // Start up the Dallas library
   sensors.begin();
-  sensors.setResolution(tube, TEMPERATURE_PRECISION);
 
 } // end setup
 
@@ -62,10 +61,27 @@ void loop() {
   sensors.requestTemperatures();
   Serial.println("DONE");
 
+  sensors.setResolution(TEMPERATURE_PRECISION);
+  
   float tubeC = sensors.getTempC(tube);
-
+  float waterC = sensors.getTempC(water);
+  float inletC = sensors.getTempC(inlet);
+  float outletC = sensors.getTempC(outlet);
+  
   Serial.print("Tube temperature: ");
   Serial.print(tubeC);
+  Serial.println("C");
+
+  Serial.print("Water temperature: ");
+  Serial.print(waterC);
+  Serial.println("C");
+  
+  Serial.print("Inlet temperature: ");
+  Serial.print(inletC);
+  Serial.println("C");
+
+  Serial.print("Outlet temperature: ");
+  Serial.print(outletC);
   Serial.println("C");
 
   // connect to MQTT server
@@ -86,7 +102,10 @@ void loop() {
   
   // publish new reading
   client.publish(tube_topic, String(tubeC).c_str(), true);
-
+  client.publish(water_topic, String(waterC).c_str(), true);
+  client.publish(inlet_topic, String(inletC).c_str(), true);
+  client.publish(outlet_topic, String(outletC).c_str(), true);
+  
   // drop into next reporting cycle
   Serial.println("Waiting for next reporting cycle...");
   Serial.println();
