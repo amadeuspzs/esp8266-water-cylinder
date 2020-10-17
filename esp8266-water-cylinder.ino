@@ -67,6 +67,7 @@ void loop() {
   float waterC = sensors.getTempC(water);
   float inletC = sensors.getTempC(inlet);
   float outletC = sensors.getTempC(outlet);
+  float thirdC = sensors.getTempC(third);
   
   Serial.print("Tube temperature: ");
   Serial.print(tubeC);
@@ -82,6 +83,10 @@ void loop() {
 
   Serial.print("Outlet temperature: ");
   Serial.print(outletC);
+  Serial.println("C");
+
+  Serial.print("Third temperature: ");
+  Serial.print(thirdC);
   Serial.println("C");
 
   // connect to MQTT server
@@ -101,10 +106,11 @@ void loop() {
   Serial.println("Publishing to MQTT...");
   
   // publish new reading
-  client.publish(tube_topic, String(tubeC).c_str(), true);
-  client.publish(water_topic, String(waterC).c_str(), true);
-  client.publish(inlet_topic, String(inletC).c_str(), true);
-  client.publish(outlet_topic, String(outletC).c_str(), true);
+  if (tubeC > 0) client.publish(tube_topic, String(tubeC).c_str(), true);
+  if (waterC > 0) client.publish(water_topic, String(waterC).c_str(), true);
+  if (inletC > 0) client.publish(inlet_topic, String(inletC).c_str(), true);
+  if (outletC > 0) client.publish(outlet_topic, String(outletC).c_str(), true);
+  if (thirdC > 0) client.publish(third_topic, String(thirdC).c_str(), true);
   
   // drop into next reporting cycle
   Serial.println("Waiting for next reporting cycle...");
